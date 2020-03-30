@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <TimerOne.h>
 #include "ClickEncoder.h"
 #include "HSVtoRGB.h"
@@ -20,21 +21,18 @@ enum Mode {
 	Off
 } mode = Hue;
 
-//TODO persist color over power lapse
+long buttonHoldStart = 0;
 
-void setup() {
-	Serial.begin(115200);
+void loadStoredColor() {
+	color.h = map(EEPROM.read(0), 0, 255, 0, 360);
+	color.s = EEPROM.read(1) / 100;
+	color.l = EEPROM.read(2) / 100;
+}
 
-	pinMode(PIN_LED_R, OUTPUT);
-	pinMode(PIN_LED_G, OUTPUT);
-	pinMode(PIN_LED_B, OUTPUT);
-
-	encoder = new ClickEncoder(PIN_RE_A, PIN_RE_B, PIN_RE_BTN, 4);
-
-	Timer1.initialize(1000);
-	Timer1.attachInterrupt([]() { encoder->service(); });
-
-	Serial.println("Setup complete...");
+void storeColor() {
+	EEPROM.write(0, map(color.h, 0, 360, 0, 255));
+	EEPROM.write(1, color.s * 100);
+	EEPROM.write(2, color.l * 100);
 }
 
 void updateColor() {
@@ -115,8 +113,30 @@ void toggleMode() {
 		case Hue: mode = Saturation; blink(1); break;
 		case Saturation: mode = Level; blink(2); break;
 		case Level: mode = Hue; blink(3); break;
-		default: break;
 	}
+}
+
+void setStartupColor() {
+	storeColor();
+	blink(3);
+}
+
+void setup() {
+	Serial.begin(115200);
+
+	pinMode(PIN_LED_R, OUTPUT);
+	pinMode(PIN_LED_G, OUTPUT);
+	pinMode(PIN_LED_B, OUTPUT);
+
+	loadStoredColor();
+	updateColor();
+
+	encoder = new ClickEncoder(PIN_RE_A, PIN_RE_B, PIN_RE_BTN, 4);
+
+	Timer1.initialize(1000);
+	Timer1.attachInterrupt([]() { encoder->service(); });
+
+	Serial.println("Setup complete.");
 }
 
 void loop() {
@@ -133,5 +153,16 @@ void loop() {
 	switch (button) {
 		case ClickEncoder::Clicked: toggleMode(); break;
 		case ClickEncoder::DoubleClicked: togglePower(); break;
+		case ClickEncoder::Held:
+			if (buttonHoldStart == 0) {
+				buttonHoldStart = millis();
+			} else if (millis() - buttonHoldStart >= 1500) {
+				buttonHoldStart = -1;
+				setStartupColor();
+			}
+			break;
+		case ClickEncoder::Released:
+			buttonHoldStart = 0;
+			break;
 	}
 }

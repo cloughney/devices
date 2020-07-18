@@ -110,9 +110,9 @@ void togglePower() {
 
 void toggleMode() {
 	switch (mode) {
-		case Hue: mode = Saturation; blink(1); break;
-		case Saturation: mode = Level; blink(2); break;
-		case Level: mode = Hue; blink(3); break;
+		case Hue: mode = Saturation; blink(2); break;
+		case Saturation: mode = Level; blink(3); break;
+		case Level: mode = Hue; blink(1); break;
 	}
 }
 

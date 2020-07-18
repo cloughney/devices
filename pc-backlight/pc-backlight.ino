@@ -117,6 +117,7 @@ void setup() {
 	FastLED.show();
 
 	Serial.println("pc-backlight");
+	Serial.println("ready");
 }
 
 void loop() {

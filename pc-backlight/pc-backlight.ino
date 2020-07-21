@@ -3,7 +3,7 @@
 
 struct {
 	int brightness;
-	int rgb[LIGHT_COUNT];
+	int rgb[3];
 } state;
 
 bool isPowerOn = false;
@@ -47,10 +47,10 @@ void fadeToBrightness(int level) {
 }
 
 void updateState(int r, int g, int b, int level) {
-	if (r != state.rgb[0] || g != state.rgb[1] || b != state.rgb[2]) {
-		fadeToBrightness(0);
+	//if (r != state.rgb[0] || g != state.rgb[1] || b != state.rgb[2]) {
+		//fadeToBrightness(0);
 		setColor(r, g, b);
-	}
+	//}
 
 	fadeToBrightness(level);
 }
@@ -139,9 +139,6 @@ void setup() {
 	FastLED.setCorrection(CRGB(255, 200, 200));
 
 	initializeState();
-
-	fill_solid(leds, LIGHT_COUNT, CRGB(state.rgb[0], state.rgb[1], state.rgb[2]));
-	FastLED.show();
 
 	Serial.println("pc-backlight");
 	Serial.println("ready");

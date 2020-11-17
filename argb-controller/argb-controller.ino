@@ -1,5 +1,4 @@
 #include <FastLED.h>
-#include "Config.h"
 
 #define PORT_COUNT 6
 #define PORT_MAX_LIGHT_COUNT 12

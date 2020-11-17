@@ -23,7 +23,7 @@
 
 CRGB leds[PORT_COUNT][PORT_MAX_LIGHT_COUNT];
 
-const byte inputBufferSize = 32;
+const byte inputBufferSize = 16;
 char input[inputBufferSize];
 bool inputReady = false;
 
@@ -61,21 +61,26 @@ void readSerialInput() {
 	}
 }
 
-bool validateSerialInput(long port, long lightIndex, long r, long g, long b) {
-	if (port <= 0 || port > PORT_COUNT) {
+bool validateSerialInput(long portIndex, long lightIndex, long r, long g, long b) {
+	if (portIndex < 0 || portIndex >= PORT_COUNT) {
+		Serial.println("bad port");
 		return false;
 	}
 
-	if (lightIndex <= 0 || lightIndex > PORT_MAX_LIGHT_COUNT) { //TODO better validation
+	if (lightIndex < 0 || lightIndex >= PORT_MAX_LIGHT_COUNT) { //TODO better validation
+		Serial.println("bad light");
 		return false;
 	}
 
 	if (r < 0 || r > 255 ||
 		g < 0 || g > 255 ||
 		b < 0 || b > 255) {
+		Serial.println("bad color");
 		return false;
 	}
 
+	
+	Serial.println("ok");
 	return true;
 }
 
@@ -94,9 +99,6 @@ void handleSerialInput() {
 
 	if (validateSerialInput(portIndex, lightIndex, r, g, b)) {
 		setColor(portIndex, lightIndex, r, g, b);
-		Serial.println("ok");
-	} else {
-		Serial.println("bad");
 	}
 
 	inputReady = false;
